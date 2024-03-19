@@ -7,7 +7,7 @@ export function rollup(options) {
   }
   // 废弃API
   if ( options.transform || options.load || options.resolveId || options.resolveExternal ) {
-		throw new Error( 'The `transform`, `load`, `resolveId` and `resolveExternal` options are deprecated in favour of a unified plugin API. See https://github.com/rollup/rollup/wiki/Plugins for details' );
+		throw new Error( 'transform、load、resolveId和resolveexternal选项已被弃用，转而采用统一的插件API' );
 	}
   const bundle = new Bundle(options);
   return bundle.build().then(() => {

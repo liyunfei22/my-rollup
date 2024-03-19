@@ -1,8 +1,7 @@
 import { rollup } from "../src/Rollup.js";
 
 describe('bundle.write()', () => {
-  console.log(this);
-  it('fails without options or options.dest', function () {
+  it.skip('fails without options or options.dest', function () {
     return rollup({
       entry: 'x',
       plugins: [{

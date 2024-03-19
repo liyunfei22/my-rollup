@@ -10,7 +10,13 @@ export default class Bundle {
     this.resolveId = first(
       this.plugins.map(plugin => plugin.resolveId)
         .filter(Boolean)
-        .concat(this.resolveId)
+        .concat(resolveId)
+    )
+    this.load = first(
+      this.plugins
+        .map(plugin => plugin.load)
+        .filter(Boolean)
+        .concat(load)
     )
     
   }
