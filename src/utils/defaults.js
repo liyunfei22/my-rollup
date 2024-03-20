@@ -23,7 +23,10 @@ export function resolveId(importee, importer) {
   // 如果 importee 不以 '.' 开头，意味着它是一个外部模块，不需要解析路径，直接返回 null。
   if ( importee[0] !== '.' ) return null;
   // 使用 dirname(importer) 获取导入者的父目录。
-// 将 importee 解析为绝对路径，然后返回它与导入者的父目录的结合，并带有文件扩展名
-//   return resolve( dirname( importer ), addExt( importee ) )
+  // 将 importee 解析为绝对路径，然后返回它与导入者的父目录的结合，并带有文件扩展名
+  return resolve( dirname( importer ), addExt( importee ) )
+}
 
+export function onwarn (msg) {
+  console.error(msg);
 }
