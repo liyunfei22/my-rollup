@@ -3,7 +3,6 @@ import first from './utils/first.js'
 import { load, resolveId, onwarn } from './utils/defaults.js';
 import { blank, keys } from './utils/object.js';
 import finalisers from './finalisers/index.js';
-import ensureArray from './utils/ensureArray.js';
 import getIndentString from './utils/getIndentString.js';
 import { unixizePath } from './utils/normalizePlatform.js';
 import transform from './utils/transform.js';

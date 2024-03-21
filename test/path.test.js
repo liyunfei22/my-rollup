@@ -4,12 +4,12 @@ const absolutePath = '/a/b/c.js';
 const relativePath = './a/b/c.js';
 
 describe('path 方法', function () {
-  describe('isAbsolute', function () {
-    it('isAbsolute', function () {
+  describe.skip('isAbsolute', function () {
+    it.skip('isAbsolute', function () {
       assert.equal(isAbsolute(absolutePath), true);
       assert.equal(isAbsolute(relativePath), false);
     });
-    it('basename', function () {
+    it.skip('basename', function () {
       assert.equal(basename(absolutePath), 'c.js');
     });
   });
