@@ -110,6 +110,9 @@ export default class Bundle {
 		});
 	}
   fetchModule (id, importer) {
+		if ( this.pending[ id ] ) return null;
+		this.pending[ id ] = true;
+
     return Promise.resolve(this.load(id))
       .catch(err => {
         let msg = `不能load ${id}`
@@ -120,9 +123,12 @@ export default class Bundle {
       .then(source => transform(source, id, this.transformers))
       .then(source => {
         const { code, originalCode,  ast, sourceMapChain } = source;
+
         const module = new Module({id, code, originalCode, ast, sourceMapChain, bundle: this})
+				
         this.modules.push( module );
 				this.moduleById[ id ] = module;
+				
         this.fetchAllDependencies( module ).then( () => module )
       }).catch(err => {
 				console.log(err)
@@ -157,31 +163,7 @@ export default class Bundle {
 
 		return Promise.all( promises );
 	}
-  fetchModule ( id, importer ) {
-		// short-circuit cycles
-		if ( this.pending[ id ] ) return null;
-		this.pending[ id ] = true;
 
-		return Promise.resolve( this.load( id ) )
-			.catch( err => {
-				let msg = `Could not load ${id}`;
-				if ( importer ) msg += ` (imported by ${importer})`;
-
-				msg += `: ${err.message}`;
-				throw new Error( msg );
-			})
-			.then( source => transform( source, id, this.transformers ) )
-			.then( source => {
-				const { code, originalCode, ast, sourceMapChain } = source;
-
-				const module = new Module({ id, code, originalCode, ast, sourceMapChain, bundle: this });
-
-				this.modules.push( module );
-				this.moduleById[ id ] = module;
-
-				return this.fetchAllDependencies( module ).then( () => module );
-			});
-	}
   render ( options = {} ) {
 		const format = options.format || 'es6';
 

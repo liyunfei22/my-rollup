@@ -129,6 +129,14 @@ class SyntheticNamespaceDeclaration {
 }
 export default class Module {
   constructor({ id, code, originalCode, ast, sourceMapChain, bundle }) {
+		// 初始化模块实例的属性
+    // id: 模块的唯一标识符，通常为文件名
+    // code: 模块的源代码
+    // originalCode: 原始源代码，用于源码映射
+    // ast: 抽象语法树，由解析器生成
+    // sourceMapChain: 源码映射链，用于生成源码映射文件
+    // bundle: 包含当前模块的打包实例
+
     this.code = code;
     this.originalCode = originalCode;
     this.sourceMapChain = sourceMapChain;
@@ -136,7 +144,8 @@ export default class Module {
     this.bundle = bundle;
     this.id = id;
 
-    // all dependencies
+    // 初始化模块的依赖、导入、导出等属性
+
     this.dependencies = [];
     this.resolvedIds = blank();
 
@@ -147,13 +156,14 @@ export default class Module {
 
     this.exportAllSources = [];
     this.exportAllModules = null;
-
+		// 使用MagicString处理源代码，支持源码映射
+		// 默认情况下，`id` 是文件名。自定义解析器和加载器可以更改这一点，但将其用于源文件名是有意义的。
     this.magicString = new MagicString(code, {
       filename: id,
       indentExclusionRanges: [],
     });
 
-    // 去掉sourceMappingURL
+    // 移除源代码中的sourceMappingURL注释
     const pattern = new RegExp(`\\/\\/#\\s+${SOURCEMAPPING_URL}=.+\\n?`, "g");
     let match;
     while ((match = pattern.exec(code))) {
@@ -161,12 +171,18 @@ export default class Module {
     }
 
     this.comments = [];
+		// 解析AST生成语句列表
     this.statements = this.parse(ast);
     this.declarations = blank();
     this.analyse();
   }
   // 这段代码的主要作用是将 JavaScript 代码解析成 AST，并对其中的语句进行一些处理，例如拆分多个声明、处理注释等。
   parse(ast) {
+		// 使用 Acorn 解析器解析模块的代码
+      // ecmaVersion: 6 表示解析 ES6 代码
+      // sourceType: 'module' 表示解析为模块代码
+      // onComment: 回调函数，用于收集 AST 中的注释信息
+      // preserveParens: true 表示保留代码中的括号结构
     if (!ast) {
       try {
         ast = parse(this.code, {
@@ -177,13 +193,14 @@ export default class Module {
           preserveParens: true,
         });
       } catch (err) {
+				// 如果解析失败，创建一个错误对象并抛出
         err.code = "PARSE_ERROR";
         err.file = this.id;
         err.message += ` in ${this.id}`;
         throw err;
       }
     }
-    // walk 方法遍历 AST，对每个节点进行处理
+    // 使用 estree-walker 库遍历 AST 并处理节点
     walk(ast, {
       enter: (node) => {
         // 将节点的起始位置和结束位置添加到 magicString 对象中，用于处理源码映射
@@ -191,15 +208,18 @@ export default class Module {
         this.magicString.addSourcemapLocation(node.end);
       },
     });
-    // 用于存储解析后的语句
+    // 创建语句数组，用于存储模块中的所有语句
     let statements = [];
-    // 记录上一个节点的结束位置
+    // 上一个语句的结束位置
     let lastChar = 0;
-    // 用于迭代注释
+    // 当前处理的注释索引
     let commentIndex = 0;
+		// 遍历 AST 的 body 属性，它包含了模块的所有顶级语句
     ast.body.forEach((node) => {
+			// 忽略空语句
       if (node.type === "EmptyStatement") return;
 
+			// 处理导出命名声明的特殊情况
 			//生成一个合成的导出声明，并添加到 statements 中。
       if (
         node.type === "ExportNamedDeclaration" &&
@@ -232,9 +252,8 @@ export default class Module {
         this.magicString.remove(node.start, node.declaration.start);
         node = node.declaration;
       }
-
+			// 处理顶级变量声明，如果声明中有多个声明符，则需要拆分
       // 将其拆分成多个独立的声明，并添加到 statements 中。
-
       if (node.type === "VariableDeclaration" && node.declarations.length > 1) {
         const lastStatement = statements[statements.length - 1];
         if (!lastStatement || !lastStatement.node.isSynthetic) {
@@ -259,7 +278,7 @@ export default class Module {
 
         lastChar = node.end; // TODO account for trailing line comment
       } else {
-				// 生成一个 Statement 对象，表示一个语句，并添加到 statements 中。
+				// 处理普通节点
         let comment;
         do {
           comment = this.comments[commentIndex];
@@ -546,10 +565,9 @@ export default class Module {
 	}
 
 	parse ( ast ) {
-		// The ast can be supplied programmatically (but usually won't be)
+		// 抽象语法树可以通过程序提供（但通常不会）
 		if ( !ast ) {
-			// Try to extract a list of top-level statements/declarations. If
-			// the parse fails, attach file info and abort
+			// 尝试提取顶层语句/声明的列表。如果解析失败，附加文件信息并中止
 			try {
 				ast = parse( this.code, {
 					ecmaVersion: 6,
@@ -606,9 +624,9 @@ export default class Module {
 				node = node.declaration;
 			}
 
-			// special case - top-level var declarations with multiple declarators
-			// should be split up. Otherwise, we may end up including code we
-			// don't need, just because an unwanted declarator is included
+			// 特殊情况 - 具有多个声明符号的顶层 var 声明应该被拆分。
+			// 否则，
+			// 我们可能会包含不需要的代码，只是因为包含了不需要的声明符号
 			if ( node.type === 'VariableDeclaration' && node.declarations.length > 1 ) {
 				// remove the leading var/let/const... UNLESS the previous node
 				// was also a synthetic node, in which case it'll get removed anyway
