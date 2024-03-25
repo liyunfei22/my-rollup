@@ -14,4 +14,15 @@ async function  doRes () {
   const res = await doSome();
   console.log(res);
 }
-doRes();
+// doRes();
+function add (a, b) {
+  return a + b
+}
+function later () {
+  setTimeout(() => {
+    console.log('setTimeout')
+  }, 3000)
+}
+Promise.resolve(later()).then(res => {
+  console.log(res);
+}) 

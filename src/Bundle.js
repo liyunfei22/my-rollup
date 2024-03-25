@@ -30,7 +30,8 @@ export default class Bundle {
         .concat(load)
     )
 
-    this.transformers = this.plugins.map( plugin => plugin.transform)
+    this.transformers = this.plugins
+			.map( plugin => plugin.transform)
       .filter(Boolean);
 
     this.pending = blank();
@@ -123,7 +124,9 @@ export default class Bundle {
         this.modules.push( module );
 				this.moduleById[ id ] = module;
         this.fetchAllDependencies( module ).then( () => module )
-      })
+      }).catch(err => {
+				console.log(err)
+			})
   }
 
   fetchAllDependencies ( module ) {
