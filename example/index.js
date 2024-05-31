@@ -1,5 +1,5 @@
-import name from './name.js';
-var a = 1; b = 2;
+import {name} from './name.js';
+var a = 1, b = 2;
 function add (a, b) {
   return a + b
 }

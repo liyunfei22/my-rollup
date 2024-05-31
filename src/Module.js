@@ -486,7 +486,7 @@ export default class Module {
 					declaration.addReference( reference );
 				} else {
 					// TODO handle globals
-					this.bundle.assumedGlobals[ reference.name ] = true;
+					// this.bundle.assumedGlobals[ reference.name ] = true;
 				}
 			});
 		});
